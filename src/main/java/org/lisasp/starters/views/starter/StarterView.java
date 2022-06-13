@@ -1,0 +1,243 @@
+package org.lisasp.starters.views.starter;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridSortOrder;
+import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.BeanValidationBinder;
+import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.data.provider.SortDirection;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.UUID;
+import javax.annotation.security.RolesAllowed;
+
+import org.lisasp.starters.data.Role;
+import org.lisasp.starters.data.entity.Starter;
+import org.lisasp.starters.data.entity.User;
+import org.lisasp.starters.data.service.StarterService;
+import org.lisasp.starters.security.AuthenticatedUser;
+import org.lisasp.starters.views.MainLayout;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+
+@PageTitle("Starter")
+@Route(value = "starter/:starterID?/:action?(edit)", layout = MainLayout.class)
+@RouteAlias(value = "", layout = MainLayout.class)
+@RolesAllowed({"USER", "ADMIN"})
+public class StarterView extends Div implements BeforeEnterObserver {
+
+    private final String STARTER_ID = "starterID";
+    private final String STARTER_EDIT_ROUTE_TEMPLATE = "starter/%s/edit";
+
+    private Grid<Starter> grid = new Grid<>(Starter.class, false);
+
+    private TextField startnumber;
+    private TextField firstName;
+    private TextField lastName;
+    private TextField yearOfBirth;
+    private TextField gender;
+
+    private TextField organization;
+
+    private Button cancel = new Button("Abbrechen");
+    private Button save = new Button("Speichern");
+
+    private BeanValidationBinder<Starter> binder;
+
+    private Starter starter;
+
+    private final AuthenticatedUser authenticatedUser;
+    private final StarterService starterService;
+
+    public StarterView(AuthenticatedUser authenticatedUser, StarterService starterService) {
+        this.authenticatedUser = authenticatedUser;
+        this.starterService = starterService;
+
+        addClassNames("starter-view");
+
+        // Create UI
+        SplitLayout splitLayout = new SplitLayout();
+
+        createGridLayout(splitLayout);
+        createEditorLayout(splitLayout);
+
+        add(splitLayout);
+
+        // Configure Grid
+        grid.addColumn("startnumber").setHeader("S#").setAutoWidth(true);
+        grid.addColumn("firstName").setHeader("Vorname").setAutoWidth(true);
+        grid.addColumn("lastName").setHeader("Nachname").setAutoWidth(true);
+        grid.addColumn("yearOfBirth").setHeader("Jahrgang").setAutoWidth(true);
+        grid.addColumn("gender").setHeader("Geschlecht").setAutoWidth(true);
+        grid.sort(Arrays.asList(new GridSortOrder<>(grid.getColumnByKey("startnumber"), SortDirection.ASCENDING)));
+        // grid.addColumn("organization").setAutoWidth(true);
+        grid.setItems(query -> {
+                          if (authenticatedUser.get().isEmpty()) {
+                              query.getPage();
+                              query.getPageSize();
+                              return new ArrayList<Starter>().stream();
+                          }
+                          User user = authenticatedUser.get().get();
+                          if (user.getRoles().contains(Role.ADMIN)) {
+                              return starterService.list(
+                                              PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
+                                      .stream();
+                          } else if (user.getRoles().contains(Role.USER)) {
+                              return starterService.list(user.getName(),
+                                                         PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
+                                      .stream();
+                          } else {
+                              query.getPage();
+                              query.getPageSize();
+                              return new ArrayList<Starter>().stream();
+                          }
+                      }
+        );
+        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+
+        // when a row is selected or deselected, populate form
+        grid.asSingleSelect().
+                addValueChangeListener(event ->
+                                       {
+                                           if (event.getValue() != null) {
+                                               UI.getCurrent().navigate(String.format(STARTER_EDIT_ROUTE_TEMPLATE, event.getValue().getId()));
+                                           } else {
+                                               clearForm();
+                                               UI.getCurrent().navigate(StarterView.class);
+                                           }
+                                       });
+
+        // Configure Form
+        binder = new BeanValidationBinder<>(Starter.class);
+
+        // Bind fields. This is where you'd define e.g. validation rules
+        binder.forField(yearOfBirth).
+                withConverter(new StringToIntegerConverter(0, "Nur ganze Zahlen sind erlaubt."))
+                .bind("yearOfBirth");
+
+        binder.bindInstanceFields(this);
+
+        cancel.addClickListener(e ->
+                                {
+                                    clearForm();
+                                    refreshGrid();
+                                });
+
+        save.addClickListener(e ->
+                              {
+                                  try {
+                                      if (this.starter == null) {
+                                          this.starter = new Starter();
+                                      }
+                                      binder.writeBean(this.starter);
+
+                                      starterService.update(this.starter);
+                                      clearForm();
+                                      refreshGrid();
+                                      Notification.show("Starter details stored.");
+                                      UI.getCurrent().navigate(StarterView.class);
+                                  } catch (ValidationException validationException) {
+                                      Notification.show("An exception happened while trying to store the starter details.");
+                                  }
+                              });
+
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        Optional<UUID> starterId = event.getRouteParameters().get(STARTER_ID).map(UUID::fromString);
+        if (starterId.isPresent()) {
+            Optional<Starter> starterFromBackend = starterService.get(starterId.get());
+            if (starterFromBackend.isPresent()) {
+                populateForm(starterFromBackend.get());
+            } else {
+                Notification.show(String.format("The requested starter was not found, ID = %s", starterId.get()), 3000,
+                                  Notification.Position.BOTTOM_START);
+                // when a row is selected but the data is no longer available,
+                // refresh grid
+                refreshGrid();
+                event.forwardTo(StarterView.class);
+            }
+        }
+    }
+
+    private void createEditorLayout(SplitLayout splitLayout) {
+        Div editorLayoutDiv = new Div();
+        editorLayoutDiv.setClassName("editor-layout");
+
+        Div editorDiv = new Div();
+        editorDiv.setClassName("editor");
+        editorLayoutDiv.add(editorDiv);
+
+        FormLayout formLayout = new FormLayout();
+        startnumber = new TextField("S#");
+        firstName = new TextField("Vorname");
+        lastName = new TextField("Nachname");
+        yearOfBirth = new TextField("Jahrgang");
+        gender = new TextField("Geschlecht");
+        organization = new TextField("LV");
+
+        startnumber.setEnabled(false);
+        gender.setEnabled(false);
+        organization.setEnabled(false);
+
+        Component[] fields = new Component[]{startnumber, gender, firstName, lastName, yearOfBirth, organization};
+
+        formLayout.add(fields);
+        editorDiv.add(formLayout);
+        createButtonLayout(editorLayoutDiv);
+
+        splitLayout.addToSecondary(editorLayoutDiv);
+    }
+
+    private void createButtonLayout(Div editorLayoutDiv) {
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.setClassName("button-layout");
+        cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        buttonLayout.add(save, cancel);
+        editorLayoutDiv.add(buttonLayout);
+    }
+
+    private void createGridLayout(SplitLayout splitLayout) {
+        Div wrapper = new Div();
+        wrapper.setClassName("grid-wrapper");
+        splitLayout.addToPrimary(wrapper);
+        wrapper.add(grid);
+    }
+
+    private void refreshGrid() {
+        grid.select(null);
+        grid.getLazyDataView().refreshAll();
+    }
+
+    private void clearForm() {
+        populateForm(null);
+    }
+
+    private void populateForm(Starter value) {
+        this.starter = value;
+        binder.readBean(this.starter);
+    }
+}
