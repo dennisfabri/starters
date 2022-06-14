@@ -1,4 +1,4 @@
-package org.lisasp.starters.views.export;
+package org.lisasp.starters.data.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -21,6 +21,7 @@ import org.lisasp.starters.security.AuthenticatedUser;
 import org.lisasp.starters.views.about.AboutView;
 import org.lisasp.starters.views.export.ExportView;
 import org.lisasp.starters.views.starter.StarterView;
+import org.lisasp.starters.views.starterexport.StarterExportView;
 import org.lisasp.starters.views.team.TeamView;
 
 /**
@@ -136,13 +137,10 @@ public class MainLayout extends AppLayout {
     private MenuItemInfo[] createMenuItems() {
         return new MenuItemInfo[]{ //
                 new MenuItemInfo("Starter", "la la-columns", StarterView.class), //
-
                 new MenuItemInfo("Mannschaft", "la la-columns", TeamView.class), //
-
-                new MenuItemInfo("Export", "la la-list", ExportView.class), //
-
+                new MenuItemInfo("Starter Export", "la la-list", StarterExportView.class), //
+                new MenuItemInfo("Mannschaft Export", "la la-list", ExportView.class), //
                 new MenuItemInfo("Über", "la la-file", AboutView.class), //
-
         };
     }
 

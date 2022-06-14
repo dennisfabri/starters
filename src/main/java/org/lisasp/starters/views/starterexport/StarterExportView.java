@@ -1,4 +1,4 @@
-package org.lisasp.starters.views.export;
+package org.lisasp.starters.views.starterexport;
 
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
@@ -6,33 +6,38 @@ import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-
-import java.io.*;
-import java.util.List;
-import javax.annotation.security.RolesAllowed;
-
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
+import org.lisasp.starters.data.model.ExportType;
 import org.lisasp.starters.data.entity.Team;
-import org.lisasp.starters.data.model.Discipline;
+import org.lisasp.starters.data.model.StarterExport;
 import org.lisasp.starters.data.service.ExportService;
 import org.lisasp.starters.views.MainLayout;
-import org.springframework.data.domain.PageRequest;
+import org.lisasp.starters.data.model.Discipline;
 
-@PageTitle("Export")
-@Route(value = "export", layout = MainLayout.class)
+import javax.annotation.security.RolesAllowed;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+
+@PageTitle("Starter Export")
+@Route(value = "starterexport", layout = MainLayout.class)
 @RolesAllowed("ADMIN")
-public class ExportView extends Div {
+public class StarterExportView extends Div {
 
     private final ExportService exportService;
 
-    private final Grid<Discipline> grid = new Grid<>();
+    private final Grid<ExportType> grid = new Grid<>();
 
-    public ExportView(ExportService exportService) {
+    public StarterExportView(ExportService exportService) {
         this.exportService = exportService;
 
         addClassName("export-view");
@@ -42,44 +47,39 @@ public class ExportView extends Div {
         grid.addComponentColumn(discipline -> createCard(discipline));
         add(grid);
 
-        grid.setItems(query ->
-                           exportService.listDisciplines(
-                                          PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
-                                  .stream()
-        );
+        grid.setItems(Arrays.asList(ExportType.values()));
     }
 
-    private HorizontalLayout createCard(Discipline discipline) {
+    private HorizontalLayout createCard(ExportType discipline) {
         HorizontalLayout card = new HorizontalLayout();
         card.addClassName("card");
         card.setSpacing(false);
         card.getThemeList().add("spacing-s");
 
-        String id = String.format("%s-%s.csv", discipline.getName().replace(' ', '-'), discipline.getGender());
+        String id = discipline.name();
 
-        Anchor anchor = new Anchor(getStreamResource(id, discipline), String.format("%s %s", discipline.getName(), discipline.getGender()));
-        anchor.getElement().setAttribute("download",true);
+        Anchor anchor = new Anchor(getStreamResource(id + ".csv", discipline), id);
+        anchor.getElement().setAttribute("download", true);
 
         card.add(anchor);
         return card;
     }
 
-    private StreamResource getStreamResource(String filename, Discipline discipline) {
+    private StreamResource getStreamResource(String filename, ExportType discipline) {
         return new StreamResource(filename,
                                   () -> new ByteArrayInputStream(generateCSV(discipline)));
     }
 
-    private byte[] generateCSV(Discipline discipline) {
-        List<Team> teams= exportService.listTeamsForDiscipline(discipline);
+    private byte[] generateCSV(ExportType discipline) {
+        List<StarterExport> teams = exportService.getStarters(discipline);
 
         try (
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                OutputStreamWriter writer = new OutputStreamWriter(bos);
+                OutputStreamWriter writer = new OutputStreamWriter(bos, StandardCharsets.ISO_8859_1);
         ) {
-            StatefulBeanToCsv<Team> beanToCsv = new StatefulBeanToCsvBuilder(writer)
+            StatefulBeanToCsv<StarterExport> beanToCsv = new StatefulBeanToCsvBuilder(writer)
                     .withSeparator(';')
                     .build();
-
 
             beanToCsv.write(teams);
 

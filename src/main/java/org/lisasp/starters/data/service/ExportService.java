@@ -1,14 +1,14 @@
 package org.lisasp.starters.data.service;
 
-import com.opencsv.bean.CsvToBean;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lisasp.starters.data.entity.Starter;
 import org.lisasp.starters.data.entity.Team;
-import org.lisasp.starters.views.export.Discipline;
+import org.lisasp.starters.data.model.Discipline;
+import org.lisasp.starters.data.model.ExportType;
+import org.lisasp.starters.data.model.StarterExport;
 import org.lisasp.starters.views.team.TeamVM;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -34,16 +34,6 @@ public class ExportService {
         return Optional.of(new TeamVM(team.get(), starterService.list(team.get().getOrganization())));
     }
 
-    public TeamVM update(TeamVM entity) {
-        Team team = repository.save(entity.toEntity());
-        log.info("Saved Team: {}", entity);
-        return new TeamVM(team, starterService.list(team.getOrganization()));
-    }
-
-    public void delete(UUID id) {
-        repository.deleteById(id);
-    }
-
     public Page<TeamVM> list(Pageable pageable) {
         Function<? super Team, TeamVM> converter = new TeamToVMConverter(starterService.list());
         return repository.findAll(pageable).map(converter);
@@ -54,20 +44,76 @@ public class ExportService {
         return repository.findByOrganization(organization, pageable).map(converter);
     }
 
-    public int count() {
-        return (int) repository.count();
+    public List<StarterExport> getStarters(ExportType exportType) {
+        List<Starter> starters = starterService.list();
+
+        return switch (exportType) {
+            case Individual -> mapToIndividualExport(starters);
+            case Members -> mapToTeamExport(starters);
+            case MixedMembers -> mapToMixedExport(starters);
+        };
     }
 
-    public Starter[] getStarters(String organization, String gender) {
-        List<Starter> starters = starterService.list(organization);
-        if (!gender.equalsIgnoreCase("mixed")) {
-            starters = starters.stream().filter(s -> s.getGender().equalsIgnoreCase(gender)).toList();
+    private List<StarterExport> mapToIndividualExport(List<Starter> starters) {
+        return starters.stream().map(starter -> new StarterExport(starter.getStartnumber(),
+                                                                  starter.getFirstName(),
+                                                                  starter.getLastName(),
+                                                                  starter.getGender(), mapYearOfBirth(starter.getYearOfBirth()))).toList();
+    }
+
+    private List<StarterExport> mapToTeamExport(List<Starter> starters) {
+        return starters.stream().map(starter -> new StarterExport(toTeamId(starter.getStartnumber(), starter.getGender()),
+                                                                  starter.getFirstName(),
+                                                                  starter.getLastName(),
+                                                                  starter.getGender(),
+                                                                  mapYearOfBirth(starter.getYearOfBirth()))).toList();
+    }
+
+    private List<StarterExport> mapToMixedExport(List<Starter> starters) {
+        return starters.stream().map(starter -> new StarterExport(toMixedTeamId(starter.getStartnumber()),
+                                                                  starter.getFirstName(),
+                                                                  starter.getLastName(),
+                                                                  starter.getGender(),
+                                                                  mapYearOfBirth(starter.getYearOfBirth()))).toList();
+    }
+
+    private String mapYearOfBirth(int yearOfBirth) {
+        if (yearOfBirth <= 0) {
+            return "";
+        }
+        return "" + yearOfBirth;
+    }
+
+    private static char[] alphabet12 = "abcdefghijkl".toCharArray();
+
+    private String toTeamId(String startnumber, String gender) {
+        if (startnumber == null || startnumber.isBlank()) {
+            return "";
+        }
+        String[] parts = startnumber.split("-");
+        if (parts.length != 2) {
+            return "";
         }
 
-        List<Starter> result = new ArrayList<>();
-        // result.add(null);
-        result.addAll(starters);
-        return result.toArray(Starter[]::new);
+        String id = gender.equalsIgnoreCase("female") ? "1" : "2";
+
+        int pos = (Integer.valueOf(parts[1]) - 1) % 6;
+
+        return String.format("%s%s%s", parts[0], id, alphabet12[pos]);
+    }
+
+    private String toMixedTeamId(String startnumber) {
+        if (startnumber == null || startnumber.isBlank()) {
+            return "";
+        }
+        String[] parts = startnumber.split("-");
+        if (parts.length != 2) {
+            return "";
+        }
+
+        int pos = Integer.valueOf(parts[1]) - 1;
+
+        return String.format("%s%s%s", parts[0], "0", alphabet12[pos]);
     }
 
     public Page<Discipline> listDisciplines(Pageable pageable) {
