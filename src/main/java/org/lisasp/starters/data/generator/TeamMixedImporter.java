@@ -4,9 +4,9 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lisasp.basics.jre.id.IdGenerator;
-import org.lisasp.starters.data.service.StarterRepository;
 import org.lisasp.starters.data.service.TeamRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,20 +18,24 @@ import java.util.List;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class TeamImporter {
+public class TeamMixedImporter {
 
     private final IdGenerator idGenerator;
 
+    @Transactional
     public void doImport(TeamRepository repository) {
-        if (repository.countByGender("female") > 0) {
-            log.info("Teams already imported.");
+        if (repository.countByDiscipline("Lifesaver Relay") > 0) {
+            log.info("Mixed Teams already imported.");
             return;
         }
-        log.info("Importing teams.");
+        log.info("Removing wrong teams");
+        repository.deleteByGender("mixed");
 
-        importFile("import/Mannschaft Ocean.csv", repository);
-        importFile("import/Mannschaft Pool.csv", repository);
-        log.info("Importing teams - finished");
+        log.info("Importing mixed teams.");
+
+        importFile("import/Mannschaft Ocean Mixed.csv", repository);
+        importFile("import/Mannschaft Pool Mixed.csv", repository);
+        log.info("Importing mixed teams - finished");
     }
 
     private void importFile(String filename, TeamRepository repository) {

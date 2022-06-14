@@ -2,6 +2,7 @@ package org.lisasp.starters.data.service;
 
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.lisasp.starters.data.entity.Starter;
 import org.lisasp.starters.data.entity.Team;
 import org.lisasp.starters.views.team.TeamVM;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TeamService {
 
     private final TeamRepository repository;
@@ -33,6 +35,7 @@ public class TeamService {
 
     public TeamVM update(TeamVM entity) {
         Team team = repository.save(entity.toEntity());
+        log.info("Saved Team: {}", entity);
         return new TeamVM(team, starterService.list(team.getOrganization()));
     }
 

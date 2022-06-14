@@ -34,7 +34,7 @@ public class UserImporter {
     }
 
     private void importFile(PasswordEncoder passwordEncoder, UserRepository repository, String filename, Role role) {
-        try (FileInputStream inputStream = new FileInputStream(new File(filename))) {
+        try (FileInputStream inputStream = new FileInputStream(filename)) {
             List<ImportedUser> records = new CsvToBeanBuilder(new InputStreamReader(inputStream,
                                                                                        StandardCharsets.UTF_8)).withType(ImportedUser.class).withSeparator(
                     ';').build().parse();

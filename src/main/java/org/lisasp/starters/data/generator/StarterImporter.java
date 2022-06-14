@@ -25,7 +25,7 @@ public class StarterImporter {
         }
         log.info("Importing starters.");
 
-        try (FileInputStream inputStream = new FileInputStream(new File("import/starters.csv"))) {
+        try (FileInputStream inputStream = new FileInputStream("import/starters.csv")) {
             List<ImportedStarter> records = new CsvToBeanBuilder(new InputStreamReader(inputStream,
                                                                                        StandardCharsets.UTF_8)).withType(ImportedStarter.class).withSeparator(
                     ';').build().parse();

@@ -10,4 +10,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TeamRepository extends JpaRepository<Team, UUID> {
     Page<Team> findByOrganization(String organization, Pageable pageable);
+
+    long countByGender(String gender);
+    long countByDiscipline(String discipline);
+
+    void deleteByGender(String gender);
 }

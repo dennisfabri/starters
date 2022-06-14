@@ -6,8 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.Entity;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 
 @Entity
@@ -34,5 +32,9 @@ public class Starter extends AbstractEntity {
     public <S extends Starter> Starter(S entity) {
         this(entity.getStartnumber(), entity.getFirstName(), entity.getLastName(), entity.getYearOfBirth(), entity.getGender(), entity.getOrganization());
         setId(entity.getId());
+    }
+
+    public String toString() {
+        return "Starter(startnumber=" + this.getStartnumber() + ", firstName=" + this.getFirstName() + ", lastName=" + this.getLastName() + ", yearOfBirth=" + this.getYearOfBirth() + ", gender=" + this.getGender() + ", organization=" + this.getOrganization() + ")";
     }
 }

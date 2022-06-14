@@ -3,6 +3,8 @@ package org.lisasp.starters.data.service;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import lombok.extern.slf4j.Slf4j;
 import org.lisasp.starters.data.entity.Starter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -10,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class StarterService {
 
     private final StarterRepository repository;
@@ -23,6 +26,7 @@ public class StarterService {
     }
 
     public Starter update(Starter entity) {
+        log.info("Saving starter: {}", entity);
         return repository.save(entity);
     }
 
