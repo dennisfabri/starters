@@ -12,6 +12,7 @@ import java.util.UUID;
 
 public interface TeamRepository extends JpaRepository<Team, UUID> {
     Page<Team> findByOrganization(String organization, Pageable pageable);
+    List<Team> findByOrganization(String organization);
 
     long countByGender(String gender);
     long countByDiscipline(String discipline);
@@ -22,4 +23,6 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     Page<Discipline> findDisciplines(Pageable pageable);
 
     List<Team> findByDisciplineAndGender(String discipline, String gender);
+
+    boolean existsByOrganizationAndDisciplineAndGender(String organization, String discipline, String gender);
 }
