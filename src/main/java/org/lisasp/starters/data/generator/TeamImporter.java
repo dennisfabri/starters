@@ -27,8 +27,9 @@ public class TeamImporter {
         if (repository.countByGender("female") > 0) {
             log.info("Teams already imported - checking for updates");
             // return;
+        } else {
+            log.info("Importing teams.");
         }
-        log.info("Importing teams.");
 
         removeEmptyTeams(repository);
 
@@ -39,6 +40,7 @@ public class TeamImporter {
 
     private void removeEmptyTeams(TeamRepository repository) {
         repository.deleteAll(repository.findByOrganization(""));
+        repository.deleteAll(repository.findByOrganization(null));
     }
 
     private void importFile(String filename, TeamRepository repository) {
