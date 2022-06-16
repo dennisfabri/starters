@@ -153,6 +153,8 @@ public class TeamView extends Div implements BeforeEnterObserver {
                 Notification.show("An exception happened while trying to store the team details.");
             }
         });
+
+        populateForm(null);
     }
 
     @Override
@@ -252,5 +254,8 @@ public class TeamView extends Div implements BeforeEnterObserver {
         starter4.setItems(starters);
 
         binder.readBean(this.team);
+
+        save.setEnabled(value != null);
+        cancel.setEnabled(value != null);
     }
 }

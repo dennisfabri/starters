@@ -154,6 +154,7 @@ public class StarterView extends Div implements BeforeEnterObserver {
                                   }
                               });
 
+        populateForm(null);
     }
 
     @Override
@@ -234,5 +235,8 @@ public class StarterView extends Div implements BeforeEnterObserver {
     private void populateForm(Starter value) {
         this.starter = value;
         binder.readBean(this.starter);
+
+        save.setEnabled(value != null);
+        cancel.setEnabled(value != null);
     }
 }
