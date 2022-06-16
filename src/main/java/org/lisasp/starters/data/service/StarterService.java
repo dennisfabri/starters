@@ -26,6 +26,9 @@ public class StarterService {
     }
 
     public Starter update(Starter entity) {
+        if (entity.getYearOfBirth() == null) {
+            entity.setYearOfBirth(0);
+        }
         log.info("Saving starter: {}", entity);
         return repository.save(entity);
     }

@@ -9,6 +9,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 
 @Entity
@@ -25,9 +27,9 @@ public class Starter extends AbstractEntity {
     private String firstName;
     @NotBlank
     private String lastName;
-    // @Min(1900)
-    // @Max(2100)
-    private int yearOfBirth;
+    @Min(0)
+    @Max(2100)
+    private Integer yearOfBirth;
     @NotBlank
     private String gender;
     @NotBlank

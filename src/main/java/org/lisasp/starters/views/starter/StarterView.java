@@ -12,34 +12,26 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.provider.SortDirection;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.UUID;
-import javax.annotation.security.RolesAllowed;
-
 import org.lisasp.starters.data.Role;
 import org.lisasp.starters.data.entity.Starter;
 import org.lisasp.starters.data.entity.User;
 import org.lisasp.starters.data.service.StarterService;
 import org.lisasp.starters.security.AuthenticatedUser;
 import org.lisasp.starters.views.MainLayout;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+
+import javax.annotation.security.RolesAllowed;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.UUID;
 
 @PageTitle("Starter")
 @Route(value = "starter/:starterID?/:action?(edit)", layout = MainLayout.class)
@@ -55,7 +47,7 @@ public class StarterView extends Div implements BeforeEnterObserver {
     private TextField startnumber;
     private TextField firstName;
     private TextField lastName;
-    private TextField yearOfBirth;
+    private IntegerField yearOfBirth;
     private TextField gender;
 
     private TextField organization;
@@ -132,8 +124,8 @@ public class StarterView extends Div implements BeforeEnterObserver {
         binder = new BeanValidationBinder<>(Starter.class);
 
         // Bind fields. This is where you'd define e.g. validation rules
-        binder.forField(yearOfBirth).
-                withConverter(new StringToIntegerConverter(0, "Nur ganze Zahlen sind erlaubt."))
+        binder.forField(yearOfBirth)
+                //.withConverter(new StringToIntegerConverter(0, "Nur ganze Zahlen sind erlaubt."))
                 .bind("yearOfBirth");
 
         binder.bindInstanceFields(this);
@@ -194,9 +186,12 @@ public class StarterView extends Div implements BeforeEnterObserver {
         startnumber = new TextField("S#");
         firstName = new TextField("Vorname");
         lastName = new TextField("Nachname");
-        yearOfBirth = new TextField("Jahrgang");
+        yearOfBirth = new IntegerField("Jahrgang");
         gender = new TextField("Geschlecht");
         organization = new TextField("LV");
+
+        yearOfBirth.setMin(0);
+        yearOfBirth.setMax(2020);
 
         startnumber.setEnabled(false);
         gender.setEnabled(false);
