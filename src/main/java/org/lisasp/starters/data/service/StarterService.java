@@ -4,12 +4,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.vaadin.flow.data.binder.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.lisasp.starters.data.entity.Starter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 
 @Service
 @Slf4j

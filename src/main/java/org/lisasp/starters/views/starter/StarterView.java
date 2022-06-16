@@ -19,6 +19,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
+import lombok.extern.slf4j.Slf4j;
 import org.lisasp.starters.data.Role;
 import org.lisasp.starters.data.entity.Starter;
 import org.lisasp.starters.data.entity.User;
@@ -37,6 +38,7 @@ import java.util.UUID;
 @Route(value = "starter/:starterID?/:action?(edit)", layout = MainLayout.class)
 @RouteAlias(value = "", layout = MainLayout.class)
 @RolesAllowed({"USER", "ADMIN"})
+@Slf4j
 public class StarterView extends Div implements BeforeEnterObserver {
 
     private final String STARTER_ID = "starterID";
@@ -124,8 +126,24 @@ public class StarterView extends Div implements BeforeEnterObserver {
         binder = new BeanValidationBinder<>(Starter.class);
 
         // Bind fields. This is where you'd define e.g. validation rules
+        binder.forField(lastName).withValidator(name -> name != null && name.trim().length() >= 3, "Der Nachname muss mindestens drei Zeichen lang sein.").bind("lastName");
+        binder.forField(firstName).withValidator(name -> name != null && name.trim().length() >= 3, "Der Vorname muss mindestens drei Zeichen lang sein.").bind("firstName");
         binder.forField(yearOfBirth)
-                //.withConverter(new StringToIntegerConverter(0, "Nur ganze Zahlen sind erlaubt."))
+                .withValidator(yob -> {
+                    if (yob == null) {
+                        return true;
+                    }
+                    return yob <= 2020;
+                }, "Der Jahrgang darf nicht über 2020 sein.")
+                .withValidator(yob -> {
+                    if (yob == null) {
+                        return true;
+                    }
+                    if (yob == 0) {
+                        return true;
+                    }
+                    return yob >= 2000;
+                }, "Der Jahrgang darf nicht kleiner als 2000 sein.")
                 .bind("yearOfBirth");
 
         binder.bindInstanceFields(this);
@@ -150,6 +168,9 @@ public class StarterView extends Div implements BeforeEnterObserver {
                                       Notification.show("Starter details stored.");
                                       UI.getCurrent().navigate(StarterView.class);
                                   } catch (ValidationException validationException) {
+                                      Notification.show("An exception happened while trying to store the starter details.");
+                                  } catch (Exception ex) {
+                                      log.warn("Save Team failed", ex);
                                       Notification.show("An exception happened while trying to store the starter details.");
                                   }
                               });

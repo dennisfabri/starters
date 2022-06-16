@@ -22,6 +22,7 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.lisasp.starters.data.Role;
 import org.lisasp.starters.data.entity.Starter;
@@ -41,6 +42,7 @@ import java.util.UUID;
 @PageTitle("Team")
 @Route(value = "team/:teamID?/:action?(edit)", layout = MainLayout.class)
 @RolesAllowed({"USER", "ADMIN"})
+@Slf4j
 public class TeamView extends Div implements BeforeEnterObserver {
 
     private final String TEAM_ID = "teamID";
@@ -150,6 +152,9 @@ public class TeamView extends Div implements BeforeEnterObserver {
                 Notification.show("Team details stored.");
                 UI.getCurrent().navigate(TeamView.class);
             } catch (ValidationException validationException) {
+                Notification.show("An exception happened while trying to store the team details.");
+            } catch (Exception ex) {
+                log.warn("Save Team failed", ex);
                 Notification.show("An exception happened while trying to store the team details.");
             }
         });
