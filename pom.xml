@@ -12,17 +12,18 @@
     <properties>
         <java.version>17</java.version>
 
-        <vaadin.version>23.1.0</vaadin.version>
+         <vaadin.version>23.1.0</vaadin.version>
         <slf4j.version>1.7.36</slf4j.version>
-        <lombok.version>1.18.22</lombok.version>
+        <lombok.version>1.18.24</lombok.version>
         <jetbrains.annotations.version>23.0.0</jetbrains.annotations.version>
+        <opencsv.version>5.6</opencsv.version>
+        <mapstruct.version>1.5.1.Final</mapstruct.version>
+
+        <h2.version>2.1.214</h2.version>
 
         <selenium.version>4.1.2</selenium.version>
-
         <junit-jupiter.version>5.8.2</junit-jupiter.version>
         <mockito.version>4.4.0</mockito.version>
-
-        <h2.version>2.1.210</h2.version>
     </properties>
 
     <parent>
@@ -114,12 +115,12 @@
             <dependency>
                 <groupId>com.opencsv</groupId>
                 <artifactId>opencsv</artifactId>
-                <version>5.6</version>
+                <version>${opencsv.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct</artifactId>
-                <version>1.4.2.Final</version>
+                <version>${mapstruct.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -166,12 +167,6 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>exampledata</artifactId>
-            <version>5.0.1</version>
         </dependency>
 
         <dependency>
@@ -241,6 +236,31 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.8.1</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.12.0</version>
+            </plugin>
             <!--
                 Take care of synchronizing java dependencies and imports in
                 package.json and main.js files.
@@ -258,7 +278,14 @@
                     </execution>
                 </executions>
             </plugin>
-
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.11.0</version>
+                <configuration>
+                    <rulesUri>file://${project.basedir}/maven-version-rules.xml</rulesUri>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok-maven-plugin</artifactId>
