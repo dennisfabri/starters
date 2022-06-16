@@ -31,7 +31,7 @@ class StarterTests {
         assertEquals("1-1", starter.getStartnumber());
         assertEquals("Jane", starter.getFirstName());
         assertEquals("Doe", starter.getLastName());
-        assertEquals(2008, starter.getYearOfBirth());
+        assertEquals((Integer)2008, starter.getYearOfBirth());
         assertEquals("female", starter.getGender());
         assertEquals("lv", starter.getOrganization());
 
@@ -56,7 +56,7 @@ class StarterTests {
         assertEquals("1-1", starter.getStartnumber());
         assertEquals("Jane", starter.getFirstName());
         assertEquals("Doe", starter.getLastName());
-        assertEquals(2008, starter.getYearOfBirth());
+        assertEquals((Integer)2008, starter.getYearOfBirth());
         assertEquals("female", starter.getGender());
         assertEquals("lv", starter.getOrganization());
 
@@ -80,7 +80,7 @@ class StarterTests {
         assertEquals("1-1", starter.getStartnumber());
         assertEquals("Amy", starter.getFirstName());
         assertEquals("Smith", starter.getLastName());
-        assertEquals(2007, starter.getYearOfBirth());
+        assertEquals((Integer)2007, starter.getYearOfBirth());
         assertEquals("female", starter.getGender());
         assertEquals("og", starter.getOrganization());
 
