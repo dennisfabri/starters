@@ -84,10 +84,13 @@ public class StarterView extends Div implements BeforeEnterObserver {
         grid.addColumn("lastName").setHeader("Nachname").setAutoWidth(true);
         grid.addColumn("yearOfBirth").setHeader("Jahrgang").setAutoWidth(true);
         grid.addColumn("gender").setHeader("Geschlecht").setAutoWidth(true);
+        if (isAdmin()) {
+            grid.addColumn("organization").setAutoWidth(true);
+        }
+
         grid.sort(Arrays.asList(new GridSortOrder<>(grid.getColumnByKey("startnumber"), SortDirection.ASCENDING)));
-        // grid.addColumn("organization").setAutoWidth(true);
         grid.setItems(query -> {
-                          if (authenticatedUser.get().isEmpty()) {
+                          if (!isAuthenticated()) {
                               query.getPage();
                               query.getPageSize();
                               return new ArrayList<Starter>().stream();
@@ -176,6 +179,13 @@ public class StarterView extends Div implements BeforeEnterObserver {
                               });
 
         populateForm(null);
+    }
+
+    private boolean isAdmin() {
+        return authenticatedUser.get().map(user -> user.getRoles().contains(Role.ADMIN)).orElse(false);
+    }
+    private boolean isAuthenticated() {
+        return authenticatedUser.get().isPresent();
     }
 
     @Override

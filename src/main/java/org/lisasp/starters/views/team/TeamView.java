@@ -90,10 +90,13 @@ public class TeamView extends Div implements BeforeEnterObserver {
         grid.addColumn(t -> starterItemLabelGenerator(t.getStarter2())).setHeader("Starter 2").setAutoWidth(true);
         grid.addColumn(t -> starterItemLabelGenerator(t.getStarter3())).setHeader("Starter 3").setAutoWidth(true);
         grid.addColumn(t -> starterItemLabelGenerator(t.getStarter4())).setHeader("Starter 4").setAutoWidth(true);
+        if (isAdmin()) {
+            grid.addColumn("organization").setAutoWidth(true);
+        }
         grid.sort(Arrays.asList(new GridSortOrder<>(grid.getColumnByKey("gender"), SortDirection.ASCENDING),
                                 new GridSortOrder<>(grid.getColumnByKey("discipline"), SortDirection.ASCENDING)));
         grid.setItems(query -> {
-                          if (authenticatedUser.get().isEmpty()) {
+                          if (!isAuthenticated()) {
                               query.getPage();
                               query.getPageSize();
                               return new ArrayList<TeamVM>().stream();
@@ -160,6 +163,13 @@ public class TeamView extends Div implements BeforeEnterObserver {
         });
 
         populateForm(null);
+    }
+
+    private boolean isAdmin() {
+        return authenticatedUser.get().map(user -> user.getRoles().contains(Role.ADMIN)).orElse(false);
+    }
+    private boolean isAuthenticated() {
+        return authenticatedUser.get().isPresent();
     }
 
     @Override
