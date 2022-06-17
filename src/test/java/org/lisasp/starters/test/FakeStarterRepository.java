@@ -44,6 +44,11 @@ public class FakeStarterRepository implements StarterRepository {
     }
 
     @Override
+    public boolean existsByStartnumber(String startnumber) {
+        return false;
+    }
+
+    @Override
     public List<Starter> findAllById(Iterable<UUID> uuids) {
         return null;
     }
