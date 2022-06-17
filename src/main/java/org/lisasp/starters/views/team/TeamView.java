@@ -49,6 +49,7 @@ public class TeamView extends Div implements BeforeEnterObserver {
 
     private final String TEAM_ID = "teamID";
     private final String TEAM_EDIT_ROUTE_TEMPLATE = "team/%s/edit";
+    private final Binder.Binding<TeamVM, Starter> starter1Binding;
     private final Binder.Binding<TeamVM, Starter> starter2Binding;
     private final Binder.Binding<TeamVM, Starter> starter3Binding;
     private final Binder.Binding<TeamVM, Starter> starter4Binding;
@@ -139,6 +140,7 @@ public class TeamView extends Div implements BeforeEnterObserver {
         binder = new BeanValidationBinder<>(TeamVM.class);
 
         // Bind fields. This is where you'd define e.g. validation rules
+        starter1Binding = binder.forField(starter1).withValidator(starter -> checkGenders(team, starter1.getValue(), starter2.getValue(), starter3.getValue(), starter4.getValue()), "Es müssen zwei weiblich und zwei männliche Schwimmer eingesetzt werden.").bind("starter1");
         starter2Binding = binder.forField(starter2).withValidator(starter -> checkStarter(starter2.getValue(), starter1.getValue()), "Der Schwimmer wird bereits verwendet.").bind("starter2");
         starter3Binding = binder.forField(starter3).withValidator(starter -> checkStarter(starter3.getValue(), starter1.getValue(), starter2.getValue()), "Der Schwimmer wird bereits verwendet.").bind("starter3");
         starter4Binding = binder.forField(starter4).withValidator(starter -> checkStarter(starter4.getValue(), starter1.getValue(), starter2.getValue(), starter3.getValue()), "Der Schwimmer wird bereits verwendet.").bind("starter4");
@@ -146,6 +148,9 @@ public class TeamView extends Div implements BeforeEnterObserver {
         binder.bindInstanceFields(this);
 
         starter1.addValueChangeListener(event -> triggerValidation());
+        starter2.addValueChangeListener(event -> triggerValidation());
+        starter3.addValueChangeListener(event -> triggerValidation());
+        starter4.addValueChangeListener(event -> triggerValidation());
 
         cancel.addClickListener(e -> {
             clearForm();
@@ -176,7 +181,22 @@ public class TeamView extends Div implements BeforeEnterObserver {
         populateForm(null);
     }
 
+    private boolean checkGenders(TeamVM team, Starter... starters) {
+        if (team == null) {
+            return true;
+        }
+        if (!"mixed".equalsIgnoreCase(team.getGender())) {
+            return true;
+        }
+
+        int maleCount = (int)Arrays.stream(starters).filter(s -> s != null && "male".equalsIgnoreCase(s.getGender())).count();
+        int femaleCount = (int)Arrays.stream(starters).filter(s -> s != null && "female".equalsIgnoreCase(s.getGender())).count();
+
+        return maleCount <= 2 && femaleCount <= 2;
+    }
+
     private void triggerValidation() {
+        starter1Binding.validate();
         starter2Binding.validate();
         starter3Binding.validate();
         starter4Binding.validate();
