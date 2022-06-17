@@ -51,14 +51,10 @@ public class StarterView extends Div implements BeforeEnterObserver {
     private TextField lastName;
     private IntegerField yearOfBirth;
     private TextField gender;
-
     private TextField organization;
-
     private Button cancel = new Button("Abbrechen");
     private Button save = new Button("Speichern");
-
     private BeanValidationBinder<Starter> binder;
-
     private Starter starter;
 
     private final AuthenticatedUser authenticatedUser;
@@ -82,7 +78,7 @@ public class StarterView extends Div implements BeforeEnterObserver {
         grid.addColumn("startnumber").setHeader("S#").setAutoWidth(true);
         grid.addColumn("firstName").setHeader("Vorname").setAutoWidth(true);
         grid.addColumn("lastName").setHeader("Nachname").setAutoWidth(true);
-        grid.addColumn("yearOfBirth").setHeader("Jahrgang").setAutoWidth(true);
+        grid.addColumn(Starter::yearOfBirthAsString).setHeader("Jahrgang").setAutoWidth(true);
         grid.addColumn("gender").setHeader("Geschlecht").setAutoWidth(true);
         if (isAdmin()) {
             grid.addColumn("organization").setAutoWidth(true);

@@ -43,4 +43,8 @@ public class Starter extends AbstractEntity {
     public String toString() {
         return "Starter(startnumber=" + this.getStartnumber() + ", firstName=" + this.getFirstName() + ", lastName=" + this.getLastName() + ", yearOfBirth=" + this.getYearOfBirth() + ", gender=" + this.getGender() + ", organization=" + this.getOrganization() + ")";
     }
+
+    public String yearOfBirthAsString() {
+        return yearOfBirth <= 0 ? "" : "" + yearOfBirth;
+    }
 }
