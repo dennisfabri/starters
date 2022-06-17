@@ -13,4 +13,5 @@ public interface StarterRepository extends JpaRepository<Starter, UUID> {
 
     Page<Starter> findByOrganization(String organization, Pageable pageable);
     List<Starter> findByOrganization(String organization);
+    boolean existsByStartnumber(String startnumber);
 }

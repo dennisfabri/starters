@@ -4,6 +4,7 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lisasp.basics.jre.id.IdGenerator;
+import org.lisasp.starters.data.entity.Starter;
 import org.lisasp.starters.data.service.StarterRepository;
 import org.springframework.stereotype.Component;
 
@@ -20,18 +21,21 @@ public class StarterImporter {
 
     public void doImport(StarterRepository repository) {
         if (repository.count() > 0) {
-            log.info("Starters already imported.");
-            return;
+            log.info("Starters already imported - checking for updates.");
+        } else {
+            log.info("Importing starters.");
         }
-        log.info("Importing starters.");
 
         try (FileInputStream inputStream = new FileInputStream("import/starters.csv")) {
             List<ImportedStarter> records = new CsvToBeanBuilder(new InputStreamReader(inputStream,
                                                                                        StandardCharsets.UTF_8)).withType(ImportedStarter.class).withSeparator(
                     ';').build().parse();
             records.forEach(r -> {
-                log.info("Starter: {}", r);
-                repository.save(r.toEntity(idGenerator));
+                Starter entity = r.toEntity(idGenerator);
+                if (!repository.existsByStartnumber(entity.getStartnumber())) {
+                    log.info("Starter: {}", r);
+                    repository.save(entity);
+                }
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
