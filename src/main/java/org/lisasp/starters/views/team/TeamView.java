@@ -15,6 +15,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -34,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 
 import javax.annotation.security.RolesAllowed;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
@@ -47,6 +49,9 @@ public class TeamView extends Div implements BeforeEnterObserver {
 
     private final String TEAM_ID = "teamID";
     private final String TEAM_EDIT_ROUTE_TEMPLATE = "team/%s/edit";
+    private final Binder.Binding<TeamVM, Starter> starter2Binding;
+    private final Binder.Binding<TeamVM, Starter> starter3Binding;
+    private final Binder.Binding<TeamVM, Starter> starter4Binding;
 
     private Grid<TeamVM> grid = new Grid<>(TeamVM.class, false);
 
@@ -134,8 +139,13 @@ public class TeamView extends Div implements BeforeEnterObserver {
         binder = new BeanValidationBinder<>(TeamVM.class);
 
         // Bind fields. This is where you'd define e.g. validation rules
+        starter2Binding = binder.forField(starter2).withValidator(starter -> checkStarter(starter2.getValue(), starter1.getValue()), "Der Schwimmer wird bereits verwendet.").bind("starter2");
+        starter3Binding = binder.forField(starter3).withValidator(starter -> checkStarter(starter3.getValue(), starter1.getValue(), starter2.getValue()), "Der Schwimmer wird bereits verwendet.").bind("starter3");
+        starter4Binding = binder.forField(starter4).withValidator(starter -> checkStarter(starter4.getValue(), starter1.getValue(), starter2.getValue(), starter3.getValue()), "Der Schwimmer wird bereits verwendet.").bind("starter4");
 
         binder.bindInstanceFields(this);
+
+        starter1.addValueChangeListener(event -> triggerValidation());
 
         cancel.addClickListener(e -> {
             clearForm();
@@ -155,6 +165,7 @@ public class TeamView extends Div implements BeforeEnterObserver {
                 Notification.show("Team details stored.");
                 UI.getCurrent().navigate(TeamView.class);
             } catch (ValidationException validationException) {
+                log.info("Save Team failed: {}", validationException.getMessage());
                 Notification.show("An exception happened while trying to store the team details.");
             } catch (Exception ex) {
                 log.warn("Save Team failed", ex);
@@ -163,6 +174,19 @@ public class TeamView extends Div implements BeforeEnterObserver {
         });
 
         populateForm(null);
+    }
+
+    private void triggerValidation() {
+        starter2Binding.validate();
+        starter3Binding.validate();
+        starter4Binding.validate();
+    }
+
+    private boolean checkStarter(Starter starter, Starter... moreStarters) {
+        if (starter == null) {
+            return true;
+        }
+        return Arrays.stream(moreStarters).noneMatch(s -> s != null && s.getStartnumber().equalsIgnoreCase(starter.getStartnumber()));
     }
 
     private boolean isAdmin() {
@@ -272,5 +296,7 @@ public class TeamView extends Div implements BeforeEnterObserver {
 
         save.setEnabled(value != null);
         cancel.setEnabled(value != null);
+
+        triggerValidation();
     }
 }

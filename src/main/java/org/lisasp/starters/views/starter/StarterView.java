@@ -129,8 +129,10 @@ public class StarterView extends Div implements BeforeEnterObserver {
         binder = new BeanValidationBinder<>(Starter.class);
 
         // Bind fields. This is where you'd define e.g. validation rules
-        binder.forField(lastName).withValidator(name -> name != null && name.trim().length() >= 3, "Der Nachname muss mindestens drei Zeichen lang sein.").bind("lastName");
-        binder.forField(firstName).withValidator(name -> name != null && name.trim().length() >= 3, "Der Vorname muss mindestens drei Zeichen lang sein.").bind("firstName");
+        binder.forField(lastName).withValidator(name -> name != null && name.trim().length() >= 3, "Der Nachname muss mindestens drei Zeichen lang sein.").bind(
+                "lastName");
+        binder.forField(firstName).withValidator(name -> name != null && name.trim().length() >= 3, "Der Vorname muss mindestens drei Zeichen lang sein.").bind(
+                "firstName");
         binder.forField(yearOfBirth)
                 .withValidator(yob -> {
                     if (yob == null) {
@@ -171,6 +173,7 @@ public class StarterView extends Div implements BeforeEnterObserver {
                                       Notification.show("Starter details stored.");
                                       UI.getCurrent().navigate(StarterView.class);
                                   } catch (ValidationException validationException) {
+                                      log.info("Save Starter failed: {}", validationException.getMessage());
                                       Notification.show("An exception happened while trying to store the starter details.");
                                   } catch (Exception ex) {
                                       log.warn("Save Team failed", ex);
@@ -184,6 +187,7 @@ public class StarterView extends Div implements BeforeEnterObserver {
     private boolean isAdmin() {
         return authenticatedUser.get().map(user -> user.getRoles().contains(Role.ADMIN)).orElse(false);
     }
+
     private boolean isAuthenticated() {
         return authenticatedUser.get().isPresent();
     }
