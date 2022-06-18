@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface TeamRepository extends JpaRepository<Team, UUID> {
@@ -25,4 +26,6 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
     List<Team> findByDisciplineAndGender(String discipline, String gender);
 
     boolean existsByOrganizationAndDisciplineAndGender(String organization, String discipline, String gender);
+
+    Optional<Team> findByOrganizationAndDisciplineAndGender(String organization, String ocean_lifesaving_relay, String gender);
 }

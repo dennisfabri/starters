@@ -64,6 +64,8 @@ public class TeamView extends Div implements BeforeEnterObserver {
     private ComboBox<Starter> starter4;
     private TextField organization;
 
+    private TextField startnumber;
+
     private Button cancel = new Button("Abbrechen");
     private Button save = new Button("Speichern");
 
@@ -250,17 +252,19 @@ public class TeamView extends Div implements BeforeEnterObserver {
         starter3 = new ComboBox<>("Starter 3");
         starter4 = new ComboBox<>("Starter 4");
         organization = new TextField("Organization");
+        startnumber = new TextField("Startnumber");
 
         discipline.setEnabled(false);
         gender.setEnabled(false);
         organization.setEnabled(false);
+        startnumber.setEnabled(false);
 
         starter1.setItemLabelGenerator(this::starterItemLabelGenerator);
         starter2.setItemLabelGenerator(this::starterItemLabelGenerator);
         starter3.setItemLabelGenerator(this::starterItemLabelGenerator);
         starter4.setItemLabelGenerator(this::starterItemLabelGenerator);
 
-        Component[] fields = new Component[]{discipline, gender, starter1, starter2, starter3, starter4, organization};
+        Component[] fields = new Component[]{discipline, gender, starter1, starter2, starter3, starter4, organization, startnumber};
 
         formLayout.add(fields);
         editorDiv.add(formLayout);
