@@ -13,7 +13,7 @@ import com.vaadin.flow.router.Route;
 
 import java.io.*;
 import java.util.List;
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
@@ -24,15 +24,15 @@ import org.lisasp.starters.views.MainLayout;
 import org.springframework.data.domain.PageRequest;
 
 @PageTitle("Export")
-@Route(value = "export", layout = MainLayout.class)
+@Route(value = "export/team", layout = MainLayout.class)
 @RolesAllowed("ADMIN")
-public class ExportView extends Div {
+public class TeamExportView extends Div {
 
     private final ExportService exportService;
 
     private final Grid<Discipline> grid = new Grid<>();
 
-    public ExportView(ExportService exportService) {
+    public TeamExportView(ExportService exportService) {
         this.exportService = exportService;
 
         addClassName("export-view");

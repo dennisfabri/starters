@@ -6,20 +6,17 @@ import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
+import jakarta.annotation.security.RolesAllowed;
 import org.lisasp.starters.data.model.ExportType;
-import org.lisasp.starters.data.entity.Team;
 import org.lisasp.starters.data.model.StarterExport;
 import org.lisasp.starters.data.service.ExportService;
 import org.lisasp.starters.views.MainLayout;
-import org.lisasp.starters.data.model.Discipline;
 
-import javax.annotation.security.RolesAllowed;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -29,7 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @PageTitle("Starter Export")
-@Route(value = "starterexport", layout = MainLayout.class)
+@Route(value = "export/starter", layout = MainLayout.class)
 @RolesAllowed("ADMIN")
 public class StarterExportView extends Div {
 

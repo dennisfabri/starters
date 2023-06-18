@@ -5,11 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.lisasp.basics.jre.id.IdGenerator;
 import org.lisasp.starters.data.entity.Team;
-import org.lisasp.starters.data.service.StarterRepository;
 import org.lisasp.starters.data.service.TeamRepository;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -45,7 +43,7 @@ public class TeamImporter {
 
     private void importFile(String filename, TeamRepository repository) {
         try (FileInputStream inputStream = new FileInputStream(filename)) {
-            List<ImportedTeam> importedTeams = new CsvToBeanBuilder(new InputStreamReader(inputStream,
+            List<ImportedTeam> importedTeams = new CsvToBeanBuilder<ImportedTeam>(new InputStreamReader(inputStream,
                                                                                           StandardCharsets.UTF_8)).withType(ImportedTeam.class).withSeparator(
                     ';').build().parse();
             importedTeams.forEach(r -> {

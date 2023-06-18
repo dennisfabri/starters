@@ -3,8 +3,7 @@ package org.lisasp.starters.views;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.avatar.Avatar;
-import com.vaadin.flow.component.contextmenu.ContextMenu;
-import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
@@ -13,16 +12,36 @@ import com.vaadin.flow.component.html.ListItem;
 import com.vaadin.flow.component.html.Nav;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.html.UnorderedList;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
+import com.vaadin.flow.theme.lumo.LumoUtility.AlignItems;
+import com.vaadin.flow.theme.lumo.LumoUtility.BoxSizing;
+import com.vaadin.flow.theme.lumo.LumoUtility.Display;
+import com.vaadin.flow.theme.lumo.LumoUtility.FlexDirection;
+import com.vaadin.flow.theme.lumo.LumoUtility.FontSize;
+import com.vaadin.flow.theme.lumo.LumoUtility.FontWeight;
+import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
+import com.vaadin.flow.theme.lumo.LumoUtility.Height;
+import com.vaadin.flow.theme.lumo.LumoUtility.ListStyleType;
+import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
+import com.vaadin.flow.theme.lumo.LumoUtility.Overflow;
+import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
+import com.vaadin.flow.theme.lumo.LumoUtility.TextColor;
+import com.vaadin.flow.theme.lumo.LumoUtility.Whitespace;
+import com.vaadin.flow.theme.lumo.LumoUtility.Width;
+import java.io.ByteArrayInputStream;
 import java.util.Optional;
 import org.lisasp.starters.data.entity.User;
 import org.lisasp.starters.security.AuthenticatedUser;
 import org.lisasp.starters.views.about.AboutView;
-import org.lisasp.starters.views.export.ExportView;
+import org.lisasp.starters.views.export.TeamExportView;
 import org.lisasp.starters.views.starter.StarterView;
 import org.lisasp.starters.views.starterexport.StarterExportView;
 import org.lisasp.starters.views.team.TeamView;
+import org.vaadin.lineawesome.LineAwesomeIcon;
 
 /**
  * The main view is a top-level placeholder for other views.
@@ -36,38 +55,27 @@ public class MainLayout extends AppLayout {
 
         private final Class<? extends Component> view;
 
-        public MenuItemInfo(String menuTitle, String iconClass, Class<? extends Component> view) {
+        public MenuItemInfo(String menuTitle, Component icon, Class<? extends Component> view) {
             this.view = view;
             RouterLink link = new RouterLink();
             // Use Lumo classnames for various styling
-            link.addClassNames("flex", "h-m", "items-center", "px-s", "relative", "text-secondary");
+            link.addClassNames(Display.FLEX, Gap.XSMALL, Height.MEDIUM, AlignItems.CENTER, Padding.Horizontal.SMALL,
+                    TextColor.BODY);
             link.setRoute(view);
 
             Span text = new Span(menuTitle);
             // Use Lumo classnames for various styling
-            text.addClassNames("font-medium", "text-s", "whitespace-nowrap");
+            text.addClassNames(FontWeight.MEDIUM, FontSize.SMALL, Whitespace.NOWRAP);
 
-            link.add(new LineAwesomeIcon(iconClass), text);
+            if (icon != null) {
+                link.add(icon);
+            }
+            link.add(text);
             add(link);
         }
 
         public Class<?> getView() {
             return view;
-        }
-
-        /**
-         * Simple wrapper to create icons using LineAwesome iconset. See
-         * https://icons8.com/line-awesome
-         */
-        @NpmPackage(value = "line-awesome", version = "1.3.0")
-        public static class LineAwesomeIcon extends Span {
-            public LineAwesomeIcon(String lineawesomeClassnames) {
-                // Use Lumo classnames for suitable font size and margin
-                addClassNames("me-s", "text-l");
-                if (!lineawesomeClassnames.isEmpty()) {
-                    addClassNames(lineawesomeClassnames);
-                }
-            }
         }
 
     }
@@ -84,63 +92,88 @@ public class MainLayout extends AppLayout {
 
     private Component createHeaderContent() {
         Header header = new Header();
-        header.addClassNames("bg-base", "border-b", "border-contrast-10", "box-border", "flex", "flex-col", "w-full");
+        header.addClassNames(BoxSizing.BORDER, Display.FLEX, FlexDirection.COLUMN, Width.FULL);
 
         Div layout = new Div();
-        layout.addClassNames("flex", "h-xl", "items-center", "px-l");
+        layout.addClassNames(Display.FLEX, AlignItems.CENTER, Padding.Horizontal.LARGE);
 
-        H1 appName = new H1("Starters JRP-Edition");
-        appName.addClassNames("my-0", "me-auto", "text-l");
+        H1 appName = new H1("JRP Starter");
+        appName.addClassNames(Margin.Vertical.MEDIUM, Margin.End.AUTO, FontSize.LARGE);
         layout.add(appName);
 
         Optional<User> maybeUser = authenticatedUser.get();
         if (maybeUser.isPresent()) {
             User user = maybeUser.get();
 
-            Avatar avatar = new Avatar(user.getName(), user.getProfilePictureUrl());
-            avatar.addClassNames("me-xs");
+            Avatar avatar = new Avatar(user.getName());
+            if (user.getProfilePicture()!= null) {
+                StreamResource resource = new StreamResource("profile-pic",
+                        () -> new ByteArrayInputStream(user.getProfilePicture()));
+                avatar.setImageResource(resource);
+            } else {
+                avatar.setImage(null);
+            }
+            avatar.setThemeName("xsmall");
+            avatar.getElement().setAttribute("tabindex", "-1");
 
-            ContextMenu userMenu = new ContextMenu(avatar);
-            userMenu.setOpenOnClick(true);
-            userMenu.addItem("Logout", e -> {
+            MenuBar userMenu = new MenuBar();
+            userMenu.setThemeName("tertiary-inline contrast");
+
+            MenuItem userName = userMenu.addItem("");
+            Div div = new Div();
+            div.add(avatar);
+            div.add(user.getName());
+            div.add(new Icon("lumo", "dropdown"));
+            div.getElement().getStyle().set("display", "flex");
+            div.getElement().getStyle().set("align-items", "center");
+            div.getElement().getStyle().set("gap", "var(--lumo-space-s)");
+            userName.add(div);
+            userName.getSubMenu().addItem("Abmelden", e -> {
                 authenticatedUser.logout();
             });
 
-            Span name = new Span(user.getName());
-            name.addClassNames("font-medium", "text-s", "text-secondary");
-
-            layout.add(avatar, name);
+            layout.add(userMenu);
         } else {
-            Anchor loginLink = new Anchor("login", "Sign in");
+            Anchor loginLink = new Anchor("login", "Anmelden");
             layout.add(loginLink);
         }
 
         Nav nav = new Nav();
-        nav.addClassNames("flex", "gap-s", "overflow-auto", "px-m");
+        nav.addClassNames(Display.FLEX, Overflow.AUTO, Padding.Horizontal.MEDIUM, Padding.Vertical.XSMALL);
 
         // Wrap the links in a list; improves accessibility
         UnorderedList list = new UnorderedList();
-        list.addClassNames("flex", "list-none", "m-0", "p-0");
+        list.addClassNames(Display.FLEX, Gap.SMALL, ListStyleType.NONE, Margin.NONE, Padding.NONE);
         nav.add(list);
 
         for (MenuItemInfo menuItem : createMenuItems()) {
-            if (accessChecker.hasAccess(menuItem.getView())) {
+            if (everyoneIsAllowedToSeeItem(menuItem.getView()) || accessChecker.hasAccess(menuItem.getView())) {
                 list.add(menuItem);
             }
-
         }
 
         header.add(layout, nav);
         return header;
     }
 
+    private boolean everyoneIsAllowedToSeeItem(Class<?> view) {
+        if (view.equals(StarterView.class)) {
+            return true;
+        }
+        if (view.equals(TeamView.class)) {
+            return true;
+        }
+        return false;
+    }
+
     private MenuItemInfo[] createMenuItems() {
         return new MenuItemInfo[]{ //
-                new MenuItemInfo("Starter", "la la-swimmer", StarterView.class), //
-                new MenuItemInfo("Mannschaft", "la la-user-friends", TeamView.class), //
-                new MenuItemInfo("Starter Export", "la la-file-export", StarterExportView.class), //
-                new MenuItemInfo("Mannschaft Export", "la la-file-export", ExportView.class), //
-                new MenuItemInfo("Über", "la la-info", AboutView.class), //
+                new MenuItemInfo("Starter", LineAwesomeIcon.SWIMMER_SOLID.create(), StarterView.class), //
+                new MenuItemInfo("Mannschaft", LineAwesomeIcon.USER_FRIENDS_SOLID.create(), TeamView.class), //
+                new MenuItemInfo("Starter Export", LineAwesomeIcon.FILE_EXCEL_SOLID.create(), StarterExportView.class), //
+                new MenuItemInfo("Mannschaft Export", LineAwesomeIcon.FILE_EXCEL_SOLID.create(), TeamExportView.class), //
+                new MenuItemInfo("Info", LineAwesomeIcon.INFO_SOLID.create(), AboutView.class), //
+
         };
     }
 

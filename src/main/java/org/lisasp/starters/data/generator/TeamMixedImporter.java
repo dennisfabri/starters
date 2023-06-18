@@ -9,7 +9,6 @@ import org.lisasp.starters.data.service.TeamRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -55,8 +54,8 @@ public class TeamMixedImporter {
 
     private void importFile(String filename, TeamRepository repository) {
         try (FileInputStream inputStream = new FileInputStream(filename)) {
-            List<ImportedTeam> records = new CsvToBeanBuilder(new InputStreamReader(inputStream,
-                                                                                       StandardCharsets.UTF_8)).withType(ImportedTeam.class).withSeparator(
+            List<ImportedTeam> records = new CsvToBeanBuilder<ImportedTeam>(new InputStreamReader(inputStream,
+                    StandardCharsets.UTF_8)).withType(ImportedTeam.class).withSeparator(
                     ';').build().parse();
             records.forEach(r -> {
                 log.info("Team: {}", r);

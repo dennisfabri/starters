@@ -3,9 +3,9 @@ package org.lisasp.starters.data.service;
 import java.util.Optional;
 import java.util.UUID;
 import org.lisasp.starters.data.entity.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,7 +13,6 @@ public class UserService {
 
     private final UserRepository repository;
 
-    @Autowired
     public UserService(UserRepository repository) {
         this.repository = repository;
     }
@@ -32,6 +31,10 @@ public class UserService {
 
     public Page<User> list(Pageable pageable) {
         return repository.findAll(pageable);
+    }
+
+    public Page<User> list(Pageable pageable, Specification<User> filter) {
+        return repository.findAll(filter, pageable);
     }
 
     public int count() {

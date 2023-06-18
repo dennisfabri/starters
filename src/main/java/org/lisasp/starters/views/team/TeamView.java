@@ -34,12 +34,10 @@ import org.lisasp.starters.views.MainLayout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 
-import javax.annotation.security.RolesAllowed;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.UUID;
+import jakarta.annotation.security.RolesAllowed;
+
+import java.util.*;
+import java.util.stream.Stream;
 
 @PageTitle("Team")
 @Route(value = "team/:teamID?/:action?(edit)", layout = MainLayout.class)
@@ -101,31 +99,25 @@ public class TeamView extends Div implements BeforeEnterObserver {
         if (isAdmin()) {
             grid.addColumn("organization").setAutoWidth(true);
         }
-        grid.sort(Arrays.asList(new GridSortOrder<>(grid.getColumnByKey("gender"), SortDirection.ASCENDING),
-                                new GridSortOrder<>(grid.getColumnByKey("discipline"), SortDirection.ASCENDING)));
+        grid.setMultiSort(true);
+        grid.sort(List.of(new GridSortOrder<>(grid.getColumnByKey("discipline"), SortDirection.ASCENDING), new GridSortOrder<>(grid.getColumnByKey("gender"), SortDirection.ASCENDING)));
         grid.setItems(query -> {
-                          if (!isAuthenticated()) {
-                              query.getPage();
-                              query.getPageSize();
-                              return new ArrayList<TeamVM>().stream();
-                          }
-                          User user = authenticatedUser.get().get();
-                          if (user.getRoles().contains(Role.ADMIN)) {
-                              return teamService.list(
-                                              PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
-                                      .stream();
-                          }
-                          if (user.getRoles().contains(Role.USER)) {
-                              return teamService.list(user.getName(),
-                                                      PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
-                                      .stream();
-                          } else {
-                              query.getPage();
-                              query.getPageSize();
-                              return new ArrayList<TeamVM>().stream();
-                          }
-                      }
-        );
+            if (!isAuthenticated()) {
+                query.getPage();
+                query.getPageSize();
+                return Stream.of();
+            }
+            User user = authenticatedUser.get().get();
+            if (user.getRoles().contains(Role.ADMIN)) {
+                return teamService.list(PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query))).stream();
+            }
+            if (user.getRoles().contains(Role.USER)) {
+                return teamService.list(user.getName(), PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query))).stream();
+            }
+            query.getPage();
+            query.getPageSize();
+            return Stream.of();
+        });
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
         // when a row is selected or deselected, populate form
@@ -191,8 +183,8 @@ public class TeamView extends Div implements BeforeEnterObserver {
             return true;
         }
 
-        int maleCount = (int)Arrays.stream(starters).filter(s -> s != null && "male".equalsIgnoreCase(s.getGender())).count();
-        int femaleCount = (int)Arrays.stream(starters).filter(s -> s != null && "female".equalsIgnoreCase(s.getGender())).count();
+        int maleCount = (int) Arrays.stream(starters).filter(s -> s != null && "male".equalsIgnoreCase(s.getGender())).count();
+        int femaleCount = (int) Arrays.stream(starters).filter(s -> s != null && "female".equalsIgnoreCase(s.getGender())).count();
 
         return maleCount <= 2 && femaleCount <= 2;
     }
@@ -214,6 +206,7 @@ public class TeamView extends Div implements BeforeEnterObserver {
     private boolean isAdmin() {
         return authenticatedUser.get().map(user -> user.getRoles().contains(Role.ADMIN)).orElse(false);
     }
+
     private boolean isAuthenticated() {
         return authenticatedUser.get().isPresent();
     }
@@ -226,8 +219,7 @@ public class TeamView extends Div implements BeforeEnterObserver {
             if (teamFromBackend.isPresent()) {
                 populateForm(teamFromBackend.get());
             } else {
-                Notification.show(String.format("The requested team was not found, ID = %s", teamId.get()), 3000,
-                                  Notification.Position.BOTTOM_START);
+                Notification.show(String.format("The requested team was not found, ID = %s", teamId.get()), 3000, Notification.Position.BOTTOM_START);
                 // when a row is selected but the data is no longer available,
                 // refresh grid
                 refreshGrid();
@@ -317,6 +309,16 @@ public class TeamView extends Div implements BeforeEnterObserver {
         starter4.setItems(starters);
 
         binder.readBean(this.team);
+
+        boolean hasMoreThan2Competitors = team != null && switch (team.getDiscipline()) {
+            case "Board Rescue", "Line Throw" -> false;
+            default -> true;
+        };
+
+        starter1.setEnabled(value != null);
+        starter2.setEnabled(value != null);
+        starter3.setEnabled(value != null && hasMoreThan2Competitors);
+        starter4.setEnabled(value != null && hasMoreThan2Competitors);
 
         save.setEnabled(value != null);
         cancel.setEnabled(value != null);

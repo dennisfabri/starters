@@ -4,12 +4,18 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.Notification.Position;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
@@ -17,8 +23,13 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.SortDirection;
+import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
+import jakarta.annotation.security.PermitAll;
+
+import java.util.*;
+
 import lombok.extern.slf4j.Slf4j;
 import org.lisasp.starters.data.Role;
 import org.lisasp.starters.data.entity.Starter;
@@ -27,24 +38,24 @@ import org.lisasp.starters.data.service.StarterService;
 import org.lisasp.starters.security.AuthenticatedUser;
 import org.lisasp.starters.views.MainLayout;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
-import javax.annotation.security.RolesAllowed;
-import java.util.ArrayList;
-import java.util.Arrays;
+import jakarta.annotation.security.RolesAllowed;
+
 import java.util.Optional;
-import java.util.UUID;
+import java.util.stream.Stream;
 
 @PageTitle("Starter")
 @Route(value = "starter/:starterID?/:action?(edit)", layout = MainLayout.class)
-@RouteAlias(value = "", layout = MainLayout.class)
 @RolesAllowed({"USER", "ADMIN"})
+@Uses(Icon.class)
 @Slf4j
 public class StarterView extends Div implements BeforeEnterObserver {
 
     private final String STARTER_ID = "starterID";
     private final String STARTER_EDIT_ROUTE_TEMPLATE = "starter/%s/edit";
 
-    private Grid<Starter> grid = new Grid<>(Starter.class, false);
+    private final Grid<Starter> grid = new Grid<>(Starter.class, false);
 
     private TextField startnumber;
     private TextField firstName;
@@ -52,9 +63,12 @@ public class StarterView extends Div implements BeforeEnterObserver {
     private IntegerField yearOfBirth;
     private TextField gender;
     private TextField organization;
-    private Button cancel = new Button("Abbrechen");
-    private Button save = new Button("Speichern");
-    private BeanValidationBinder<Starter> binder;
+
+    private final Button cancel = new Button("Abbrechen");
+    private final Button save = new Button("Speichern");
+
+    private final BeanValidationBinder<Starter> binder;
+
     private Starter starter;
 
     private final AuthenticatedUser authenticatedUser;
@@ -84,42 +98,45 @@ public class StarterView extends Div implements BeforeEnterObserver {
             grid.addColumn("organization").setAutoWidth(true);
         }
 
-        grid.sort(Arrays.asList(new GridSortOrder<>(grid.getColumnByKey("startnumber"), SortDirection.ASCENDING)));
+        grid.setMultiSort(true);
+        grid.sort(List.of(new GridSortOrder<>(grid.getColumnByKey("startnumber"), SortDirection.ASCENDING)));
         grid.setItems(query -> {
-                          if (!isAuthenticated()) {
-                              query.getPage();
-                              query.getPageSize();
-                              return new ArrayList<Starter>().stream();
-                          }
-                          User user = authenticatedUser.get().get();
-                          if (user.getRoles().contains(Role.ADMIN)) {
-                              return starterService.list(
-                                              PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
-                                      .stream();
-                          } else if (user.getRoles().contains(Role.USER)) {
-                              return starterService.list(user.getName(),
-                                                         PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
-                                      .stream();
-                          } else {
-                              query.getPage();
-                              query.getPageSize();
-                              return new ArrayList<Starter>().stream();
-                          }
-                      }
+                    if (!isAuthenticated()) {
+                        query.getPage();
+                        query.getPageSize();
+                        return Stream.of();
+                    }
+                    User user = authenticatedUser.get().get();
+                    if (user.getRoles().contains(Role.ADMIN)) {
+                        return starterService.list(
+                                        PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
+                                .stream();
+                    }
+                    if (user.getRoles().contains(Role.USER)) {
+                        return starterService.list(user.getName(),
+                                        PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
+                                .stream();
+                    }
+                    query.getPage();
+                    query.getPageSize();
+                    return Stream.of();
+                }
         );
+
+        //grid.setItems(query -> samplePersonService.list(
+        //        PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
+        //        .stream());
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
         // when a row is selected or deselected, populate form
-        grid.asSingleSelect().
-                addValueChangeListener(event ->
-                                       {
-                                           if (event.getValue() != null) {
-                                               UI.getCurrent().navigate(String.format(STARTER_EDIT_ROUTE_TEMPLATE, event.getValue().getId()));
-                                           } else {
-                                               clearForm();
-                                               UI.getCurrent().navigate(StarterView.class);
-                                           }
-                                       });
+        grid.asSingleSelect().addValueChangeListener(event -> {
+            if (event.getValue() != null) {
+                UI.getCurrent().navigate(String.format(STARTER_EDIT_ROUTE_TEMPLATE, event.getValue().getId()));
+            } else {
+                clearForm();
+                UI.getCurrent().navigate(StarterView.class);
+            }
+        });
 
         // Configure Form
         binder = new BeanValidationBinder<>(Starter.class);
@@ -149,33 +166,35 @@ public class StarterView extends Div implements BeforeEnterObserver {
 
         binder.bindInstanceFields(this);
 
-        cancel.addClickListener(e ->
-                                {
-                                    clearForm();
-                                    refreshGrid();
-                                });
+        cancel.addClickListener(e -> {
+            clearForm();
+            refreshGrid();
+        });
 
-        save.addClickListener(e ->
-                              {
-                                  try {
-                                      if (this.starter == null) {
-                                          this.starter = new Starter();
-                                      }
-                                      binder.writeBean(this.starter);
-
-                                      starterService.update(this.starter);
-                                      clearForm();
-                                      refreshGrid();
-                                      Notification.show("Starter details stored.");
-                                      UI.getCurrent().navigate(StarterView.class);
-                                  } catch (ValidationException validationException) {
-                                      log.info("Save Starter failed: {}", validationException.getMessage());
-                                      Notification.show("An exception happened while trying to store the starter details.");
-                                  } catch (Exception ex) {
-                                      log.warn("Save Team failed", ex);
-                                      Notification.show("An exception happened while trying to store the starter details.");
-                                  }
-                              });
+        save.addClickListener(e -> {
+            try {
+                if (this.starter == null) {
+                    this.starter = new Starter();
+                }
+                binder.writeBean(this.starter);
+                starterService.update(this.starter);
+                clearForm();
+                refreshGrid();
+                Notification.show("Starter details stored.");
+                UI.getCurrent().navigate(StarterView.class);
+            } catch (ObjectOptimisticLockingFailureException exception) {
+                Notification n = Notification.show(
+                        "Error updating the data. Somebody else has updated the record while you were making changes.");
+                n.setPosition(Position.MIDDLE);
+                n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            } catch (ValidationException validationException) {
+                log.info("Save Starter failed: {}", validationException.getMessage());
+                Notification.show("An exception happened while trying to store the starter details.");
+            } catch (Exception ex) {
+                log.warn("Save Team failed", ex);
+                Notification.show("An exception happened while trying to store the starter details.");
+            }
+        });
 
         populateForm(null);
     }
@@ -196,8 +215,9 @@ public class StarterView extends Div implements BeforeEnterObserver {
             if (starterFromBackend.isPresent()) {
                 populateForm(starterFromBackend.get());
             } else {
-                Notification.show(String.format("The requested starter was not found, ID = %s", starterId.get()), 3000,
-                                  Notification.Position.BOTTOM_START);
+                Notification.show(
+                        String.format("The requested starter was not found, ID = %s", starterId.get()), 3000,
+                        Notification.Position.BOTTOM_START);
                 // when a row is selected but the data is no longer available,
                 // refresh grid
                 refreshGrid();
@@ -256,7 +276,8 @@ public class StarterView extends Div implements BeforeEnterObserver {
 
     private void refreshGrid() {
         grid.select(null);
-        grid.getLazyDataView().refreshAll();
+        // grid.getLazyDataView().refreshAll();
+        grid.getDataProvider().refreshAll();
     }
 
     private void clearForm() {
@@ -267,6 +288,9 @@ public class StarterView extends Div implements BeforeEnterObserver {
         this.starter = value;
         binder.readBean(this.starter);
 
+        firstName.setEnabled(value != null);
+        lastName.setEnabled(value != null);
+        yearOfBirth.setEnabled(value != null);
         save.setEnabled(value != null);
         cancel.setEnabled(value != null);
     }

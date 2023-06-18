@@ -30,7 +30,7 @@ public class TeamVM {
     }
 
     public TeamVM(Team team, Map<String, Starter> starters) {
-        this(team.getId(), team.getStartnumber(), team.getDiscipline(), team.getGender(), null, null, null, null, team.getOrganization());
+        this(team.getId(), team.getStartnumber(), team.getDiscipline(), team.getGender(),null, null, null, null, team.getOrganization());
 
         starter1 = starters.get(team.getStarter1());
         starter2 = starters.get(team.getStarter2());

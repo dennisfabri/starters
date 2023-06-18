@@ -3,14 +3,12 @@ package org.lisasp.starters.data.generator;
 import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.lisasp.basics.jre.id.IdGenerator;
 import org.lisasp.starters.data.Role;
 import org.lisasp.starters.data.entity.User;
 import org.lisasp.starters.data.service.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -24,7 +22,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class UserImporter {
 
-    private final IdGenerator idGenerator;
+    // private final IdGenerator idGenerator;
 
     public void doImport(PasswordEncoder passwordEncoder, UserRepository repository) {
         log.info("Importing Users");
@@ -35,7 +33,7 @@ public class UserImporter {
 
     private void importFile(PasswordEncoder passwordEncoder, UserRepository repository, String filename, Role role) {
         try (FileInputStream inputStream = new FileInputStream(filename)) {
-            List<ImportedUser> records = new CsvToBeanBuilder(new InputStreamReader(inputStream,
+            List<ImportedUser> records = new CsvToBeanBuilder<ImportedUser>(new InputStreamReader(inputStream,
                                                                                        StandardCharsets.UTF_8)).withType(ImportedUser.class).withSeparator(
                     ';').build().parse();
             records.forEach(r -> {
