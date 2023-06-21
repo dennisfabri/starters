@@ -30,6 +30,8 @@ public class ImportedTeam {
     private String id3;
     @CsvBindByName(column = "Id4")
     private String id4;
+    @CsvBindByName(column = "round")
+    private int round;
 
     public List<Team> toEntities(IdGenerator idGenerator) {
         ArrayList<Team> teams = new ArrayList<>();
@@ -39,7 +41,7 @@ public class ImportedTeam {
 
     private void extracted(String discipline, IdGenerator idGenerator, ArrayList<Team> teams) {
         if (discipline != null && !discipline.isBlank()) {
-            Team starter = new Team(startnumber, discipline.trim(), gender, id1, id2, id3, id4, organization);
+            Team starter = new Team(startnumber, discipline.trim(), gender, id1, id2, id3, id4, organization, round);
             starter.setId(UUID.fromString(idGenerator.nextId()));
             teams.add(starter);
         }

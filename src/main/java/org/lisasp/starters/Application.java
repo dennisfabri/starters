@@ -1,6 +1,7 @@
 package org.lisasp.starters;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.Theme;
 import javax.sql.DataSource;
 
@@ -22,7 +23,7 @@ import org.springframework.context.annotation.Bean;
  */
 @SpringBootApplication
 @Theme(value = "starters")
-// @PWA(name = "Starters JRP-Edition", shortName = "StartersJRP")
+@PWA(name = "JRP Starter 2023", shortName = "StarterJRP", offline = false)
 public class Application implements AppShellConfigurator {
 
     public static void main(String[] args) {

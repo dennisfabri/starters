@@ -1,5 +1,6 @@
 package org.lisasp.starters.views.about;
 
+import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
@@ -19,10 +20,12 @@ public class AboutView extends VerticalLayout {
 
     public AboutView() {
         setSpacing(false);
+        addClassNames("about-view");
 
         Image img = new Image("images/logo.png", "Starter JRP-Edition Logo");
         img.setWidth("200px");
         add(img);
+        add(new H1("JRP Starter"));
 
         add(new H2("Starterverwaltung für den Junioren-Rettungspokal 2023"));
         add(new Paragraph("Kontakt: jrp@dlrg.de"));

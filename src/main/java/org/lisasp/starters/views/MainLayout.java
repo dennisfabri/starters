@@ -111,7 +111,7 @@ public class MainLayout extends AppLayout {
                         () -> new ByteArrayInputStream(user.getProfilePicture()));
                 avatar.setImageResource(resource);
             } else {
-                avatar.setImage(null);
+                // avatar.setImage(null);
             }
             avatar.setThemeName("xsmall");
             avatar.getElement().setAttribute("tabindex", "-1");
@@ -121,7 +121,7 @@ public class MainLayout extends AppLayout {
 
             MenuItem userName = userMenu.addItem("");
             Div div = new Div();
-            div.add(avatar);
+            // div.add(avatar);
             div.add(user.getName());
             div.add(new Icon("lumo", "dropdown"));
             div.getElement().getStyle().set("display", "flex");

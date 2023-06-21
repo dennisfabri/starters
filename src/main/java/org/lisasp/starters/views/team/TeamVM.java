@@ -24,13 +24,14 @@ public class TeamVM {
     private Starter starter3;
     private Starter starter4;
     private String organization;
+    private int round;
 
     public TeamVM(Team team, List<Starter> starters) {
         this(team, starters.stream().collect(Collectors.toMap(Starter::getStartnumber, s -> s)));
     }
 
     public TeamVM(Team team, Map<String, Starter> starters) {
-        this(team.getId(), team.getStartnumber(), team.getDiscipline(), team.getGender(),null, null, null, null, team.getOrganization());
+        this(team.getId(), team.getStartnumber(), team.getDiscipline(), team.getGender(),null, null, null, null, team.getOrganization(), team.getRound());
 
         starter1 = starters.get(team.getStarter1());
         starter2 = starters.get(team.getStarter2());
@@ -39,7 +40,7 @@ public class TeamVM {
     }
 
     public Team toEntity() {
-        Team team = new Team(startnumber, discipline, gender, getStartnumber1(), getStartnumber2(), getStartnumber3(), getStartnumber4(), organization);
+        Team team = new Team(startnumber, discipline, gender, getStartnumber1(), getStartnumber2(), getStartnumber3(), getStartnumber4(), organization, round);
         team.setId(id);
         return team;
     }

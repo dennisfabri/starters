@@ -29,11 +29,12 @@ public class StarterImporter {
         try (FileInputStream inputStream = new FileInputStream("import/starters.csv")) {
             List<ImportedStarter> records = new CsvToBeanBuilder<ImportedStarter>(new InputStreamReader(inputStream,
                     StandardCharsets.UTF_8)).withType(ImportedStarter.class).withSeparator(
-                    ';').build().parse();
+                    ';').withIgnoreEmptyLine(true).withQuoteChar('"').build().parse();
             records.forEach(r -> {
+                log.info("Read starter: {}", r);
                 Starter entity = r.toEntity(idGenerator);
                 if (!repository.existsByStartnumber(entity.getStartnumber())) {
-                    log.info("Starter: {}", r);
+                    log.info("Writing starter: {}", entity);
                     repository.save(entity);
                 }
             });

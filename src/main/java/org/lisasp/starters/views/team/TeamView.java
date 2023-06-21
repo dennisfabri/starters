@@ -51,8 +51,8 @@ public class TeamView extends Div implements BeforeEnterObserver {
     private final Binder.Binding<TeamVM, Starter> starter2Binding;
     private final Binder.Binding<TeamVM, Starter> starter3Binding;
     private final Binder.Binding<TeamVM, Starter> starter4Binding;
-
-    private Grid<TeamVM> grid = new Grid<>(TeamVM.class, false);
+    
+    private final Grid<TeamVM> grid = new Grid<>(TeamVM.class, false);
 
     private TextField discipline;
     private TextField gender;
@@ -61,13 +61,12 @@ public class TeamView extends Div implements BeforeEnterObserver {
     private ComboBox<Starter> starter3;
     private ComboBox<Starter> starter4;
     private TextField organization;
-
     private TextField startnumber;
 
-    private Button cancel = new Button("Abbrechen");
-    private Button save = new Button("Speichern");
+    private final Button cancel = new Button("Abbrechen");
+    private final Button save = new Button("Speichern");
 
-    private BeanValidationBinder<TeamVM> binder;
+    private final BeanValidationBinder<TeamVM> binder;
 
     private TeamVM team;
 
@@ -96,6 +95,7 @@ public class TeamView extends Div implements BeforeEnterObserver {
         grid.addColumn(t -> starterItemLabelGenerator(t.getStarter2())).setHeader("Starter 2").setAutoWidth(true);
         grid.addColumn(t -> starterItemLabelGenerator(t.getStarter3())).setHeader("Starter 3").setAutoWidth(true);
         grid.addColumn(t -> starterItemLabelGenerator(t.getStarter4())).setHeader("Starter 4").setAutoWidth(true);
+        grid.addColumn(this::roundText).setHeader("Runde").setAutoWidth(true);
         if (isAdmin()) {
             grid.addColumn("organization").setAutoWidth(true);
         }
@@ -173,6 +173,19 @@ public class TeamView extends Div implements BeforeEnterObserver {
         });
 
         populateForm(null);
+    }
+
+    private static final Set<String> DisciplinesWithIntermediateRound = Set.of();
+
+    private String roundText(TeamVM t) {
+        if (t == null) {
+            return "";
+        }
+        return switch (t.getRound()) {
+            case 0  -> "Vorlauf";
+            case 1 -> DisciplinesWithIntermediateRound.contains(t.getDiscipline()) ? "Zwischenlauf" : "Finale";
+            default -> "Finale";
+        };
     }
 
     private boolean checkGenders(TeamVM team, Starter... starters) {
