@@ -4,8 +4,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
@@ -23,13 +21,12 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.provider.SortDirection;
-import com.vaadin.flow.data.renderer.LitRenderer;
-import com.vaadin.flow.router.*;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
-import jakarta.annotation.security.PermitAll;
-
-import java.util.*;
-
+import jakarta.annotation.security.RolesAllowed;
 import lombok.extern.slf4j.Slf4j;
 import org.lisasp.starters.data.Role;
 import org.lisasp.starters.data.entity.Starter;
@@ -40,9 +37,9 @@ import org.lisasp.starters.views.MainLayout;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
-import jakarta.annotation.security.RolesAllowed;
-
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 @PageTitle("Starter")
@@ -232,6 +229,8 @@ public class StarterView extends Div implements BeforeEnterObserver {
 
         Div editorDiv = new Div();
         editorDiv.setClassName("editor");
+
+        editorLayoutDiv.add(createButtonLayout());
         editorLayoutDiv.add(editorDiv);
 
         FormLayout formLayout = new FormLayout();
@@ -252,19 +251,19 @@ public class StarterView extends Div implements BeforeEnterObserver {
         Component[] fields = new Component[]{startnumber, gender, firstName, lastName, yearOfBirth, organization};
 
         formLayout.add(fields);
+
         editorDiv.add(formLayout);
-        createButtonLayout(editorLayoutDiv);
 
         splitLayout.addToSecondary(editorLayoutDiv);
     }
 
-    private void createButtonLayout(Div editorLayoutDiv) {
+    private HorizontalLayout createButtonLayout() {
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.setClassName("button-layout");
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         buttonLayout.add(save, cancel);
-        editorLayoutDiv.add(buttonLayout);
+        return buttonLayout;
     }
 
     private void createGridLayout(SplitLayout splitLayout) {

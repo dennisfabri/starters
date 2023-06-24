@@ -245,8 +245,11 @@ public class TeamView extends Div implements BeforeEnterObserver {
         Div editorLayoutDiv = new Div();
         editorLayoutDiv.setClassName("editor-layout");
 
+
         Div editorDiv = new Div();
         editorDiv.setClassName("editor");
+
+        editorLayoutDiv.add(createButtonLayout());
         editorLayoutDiv.add(editorDiv);
 
         FormLayout formLayout = new FormLayout();
@@ -273,7 +276,6 @@ public class TeamView extends Div implements BeforeEnterObserver {
 
         formLayout.add(fields);
         editorDiv.add(formLayout);
-        createButtonLayout(editorLayoutDiv);
 
         splitLayout.addToSecondary(editorLayoutDiv);
     }
@@ -286,13 +288,13 @@ public class TeamView extends Div implements BeforeEnterObserver {
         return String.format("%s %s", starter.getFirstName(), starter.getLastName());
     }
 
-    private void createButtonLayout(Div editorLayoutDiv) {
+    private HorizontalLayout createButtonLayout() {
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.setClassName("button-layout");
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         buttonLayout.add(save, cancel);
-        editorLayoutDiv.add(buttonLayout);
+        return buttonLayout;
     }
 
     private void createGridLayout(SplitLayout splitLayout) {
