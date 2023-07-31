@@ -33,4 +33,11 @@ public class Team extends AbstractEntity {
     private String organization;
     @ColumnDefault("0")
     private int round;
+
+    public void updateFrom(Team team) {
+        setStarter1(team.getStarter1());
+        setStarter2(team.getStarter2());
+        setStarter3(team.getStarter3());
+        setStarter4(team.getStarter4());
+    }
 }

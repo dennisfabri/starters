@@ -25,7 +25,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
 
     List<Team> findByDisciplineAndGender(String discipline, String gender);
 
-    boolean existsByOrganizationAndDisciplineAndGender(String organization, String discipline, String gender);
+    boolean existsByOrganizationAndDisciplineAndGenderAndRound(String organization, String discipline, String gender, int round);
 
-    Optional<Team> findByOrganizationAndDisciplineAndGender(String organization, String ocean_lifesaving_relay, String gender);
+    Optional<Team> findByOrganizationAndDisciplineAndGenderAndRound(String organization, String ocean_lifesaving_relay, String gender, int round);
 }

@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StarterImporter {
 
-    private final IdGenerator idGenerator;
+    private final IdGenerator idGenerator2;
 
     public void doImport(StarterRepository repository) {
         if (repository.count() > 0) {
@@ -32,7 +32,7 @@ public class StarterImporter {
                     ';').withIgnoreEmptyLine(true).withQuoteChar('"').build().parse();
             records.forEach(r -> {
                 log.info("Read starter: {}", r);
-                Starter entity = r.toEntity(idGenerator);
+                Starter entity = r.toEntity(idGenerator2);
                 if (!repository.existsByStartnumber(entity.getStartnumber())) {
                     log.info("Writing starter: {}", entity);
                     repository.save(entity);

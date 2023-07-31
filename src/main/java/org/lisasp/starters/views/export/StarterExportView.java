@@ -1,4 +1,4 @@
-package org.lisasp.starters.views.starterexport;
+package org.lisasp.starters.views.export;
 
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;

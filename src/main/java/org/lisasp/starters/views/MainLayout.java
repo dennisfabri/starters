@@ -38,8 +38,10 @@ import org.lisasp.starters.data.entity.User;
 import org.lisasp.starters.security.AuthenticatedUser;
 import org.lisasp.starters.views.about.AboutView;
 import org.lisasp.starters.views.export.TeamExportView;
+import org.lisasp.starters.views.imports.ImportView;
+import org.lisasp.starters.views.results.ResultPoolView;
 import org.lisasp.starters.views.starter.StarterView;
-import org.lisasp.starters.views.starterexport.StarterExportView;
+import org.lisasp.starters.views.export.StarterExportView;
 import org.lisasp.starters.views.team.TeamView;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
@@ -168,8 +170,10 @@ public class MainLayout extends AppLayout {
 
     private MenuItemInfo[] createMenuItems() {
         return new MenuItemInfo[]{ //
+                new MenuItemInfo("Pool Results", LineAwesomeIcon.SWIMMER_SOLID.create(), ResultPoolView.class), //
                 new MenuItemInfo("Starter", LineAwesomeIcon.SWIMMER_SOLID.create(), StarterView.class), //
                 new MenuItemInfo("Mannschaft", LineAwesomeIcon.USER_FRIENDS_SOLID.create(), TeamView.class), //
+                new MenuItemInfo("Import", LineAwesomeIcon.FILE_EXCEL_SOLID.create(), ImportView.class), //
                 new MenuItemInfo("Starter Export", LineAwesomeIcon.FILE_EXCEL_SOLID.create(), StarterExportView.class), //
                 new MenuItemInfo("Mannschaft Export", LineAwesomeIcon.FILE_EXCEL_SOLID.create(), TeamExportView.class), //
                 new MenuItemInfo("Info", LineAwesomeIcon.INFO_SOLID.create(), AboutView.class), //

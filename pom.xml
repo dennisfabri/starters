@@ -16,7 +16,7 @@
         <slf4j.version>2.0.7</slf4j.version>
         <lombok.version>1.18.28</lombok.version>
         <jetbrains.annotations.version>24.0.1</jetbrains.annotations.version>
-        <opencsv.version>5.7.1</opencsv.version>
+        <opencsv.version>5.8</opencsv.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
 
         <h2.version>2.1.214</h2.version>
@@ -218,6 +218,12 @@
                     <jvmArguments>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005</jvmArguments>
                     <wait>500</wait>
                     <maxAttempts>240</maxAttempts>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
                 </configuration>
             </plugin>
 

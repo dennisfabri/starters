@@ -5,9 +5,11 @@ import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.Theme;
 import javax.sql.DataSource;
 
+import lombok.extern.slf4j.Slf4j;
 import org.lisasp.basics.jre.id.IdGenerator;
 import org.lisasp.basics.jre.id.UUIDGenerator;
 import org.lisasp.starters.data.service.StarterRepository;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.sql.init.SqlDataSourceScriptDatabaseInitializer;
@@ -21,6 +23,7 @@ import org.springframework.context.annotation.Bean;
  * and some desktop browsers.
  *
  */
+@Slf4j
 @SpringBootApplication
 @Theme(value = "starters")
 @PWA(name = "JRP Starter 2023", shortName = "StarterJRP", offline = false)
@@ -46,7 +49,7 @@ public class Application implements AppShellConfigurator {
     }
 
     @Bean
-    public IdGenerator idGenerator() {
+    public IdGenerator idGenerator2() {
         return new UUIDGenerator();
     }
 }

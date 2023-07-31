@@ -28,3 +28,4 @@ tsconfig.json
 types.d.ts
 package-lock.json
 package.json
+logs/

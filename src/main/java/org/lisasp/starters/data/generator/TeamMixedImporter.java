@@ -21,7 +21,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TeamMixedImporter {
 
-    private final IdGenerator idGenerator;
+    private final IdGenerator idGenerator2;
 
     @Transactional
     public void doImport(TeamRepository repository) {
@@ -43,7 +43,7 @@ public class TeamMixedImporter {
     private void fixTeams(TeamRepository repository) {
         List<Team> teams = repository.findByDisciplineAndGender("Lifesaver Relay", "mixed");
         teams.stream().filter(team -> team.getStartnumber() == null || team.getStartnumber().isBlank()).forEach(team -> {
-            Optional<Team> ocean = repository.findByOrganizationAndDisciplineAndGender(team.getOrganization(), "Ocean Lifesaver Relay", team.getGender());
+            Optional<Team> ocean = repository.findByOrganizationAndDisciplineAndGenderAndRound(team.getOrganization(), "Ocean Lifesaver Relay", team.getGender(), team.getRound());
             ocean.ifPresent(o -> {
                 team.setStartnumber(o.getStartnumber());
                 repository.save(team);
@@ -59,7 +59,7 @@ public class TeamMixedImporter {
                     ';').build().parse();
             records.forEach(r -> {
                 log.info("Team: {}", r);
-                repository.saveAll(r.toEntities(idGenerator));
+                repository.saveAll(r.toEntities(idGenerator2));
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
